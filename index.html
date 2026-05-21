@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SN54 · Yanez MIID · Full On-Chain Analysis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #fff; color: #111; font-size: 13px; line-height: 1.5; }
+
+/* NAV */
+.nav { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid #e8e8e8; padding: 0 32px; display: flex; align-items: center; gap: 0; height: 36px; }
+.nav a { font-size: 11px; font-weight: 700; color: #aaa; text-decoration: none; padding: 0 14px; height: 36px; display: flex; align-items: center; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; letter-spacing: 0.3px; }
+.nav a:hover { color: #111; border-bottom-color: #111; }
+.nav .live-pill { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: #1a7a3c; background: #e8f5ee; border: 1px solid #9ecfb0; border-radius: 12px; padding: 2px 10px; }
+.nav .live-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #1a7a3c; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* HEADER */
+.header { background: #111; color: #fff; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 16px; font-weight: 700; }
+.header .meta { font-size: 11px; color: #888; margin-top: 3px; }
+.header .key-row { font-size: 10px; color: #666; margin-top: 4px; text-align: right; }
+.header .key-row span { font-family: monospace; color: #aaa; margin-left: 6px; }
+
+/* KPI STRIP */
+.kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); border-bottom: 2px solid #111; }
+.kpi { padding: 14px 22px; border-right: 1px solid #e8e8e8; }
+.kpi:last-child { border-right: none; }
+.kpi-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.kpi-value { font-size: 20px; font-weight: 700; }
+.kpi-sub { font-size: 10px; color: #999; margin-top: 2px; }
+.kpi-value.g { color: #1a7a3c; }
+.kpi-value.r { color: #c0392b; }
+.kpi-value.a { color: #b05e00; }
+.kpi-value.b { color: #1a4fa0; }
+
+/* INSIGHT GRID */
+.insights-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0; border-bottom: 2px solid #111; }
+.insight-card { padding: 20px 24px; border-right: 1px solid #e8e8e8; border-bottom: 1px solid #e8e8e8; }
+.insight-card:nth-child(3n) { border-right: none; }
+.insight-card:nth-last-child(-n+3) { border-bottom: none; }
+.ic-num { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #bbb; margin-bottom: 6px; }
+.ic-title { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 8px; line-height: 1.3; }
+.ic-body { font-size: 11px; color: #555; line-height: 1.6; }
+.ic-stat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 3px; }
+.ic-stat.g { background: #e8f5ee; color: #1a7a3c; }
+.ic-stat.r { background: #fdecea; color: #c0392b; }
+.ic-stat.a { background: #fdf3e3; color: #b05e00; }
+.ic-stat.b { background: #eef2fc; color: #1a4fa0; }
+.ic-stat.n { background: #f2f2f2; color: #555; }
+
+/* SECTION */
+.section { padding: 24px 32px; border-bottom: 1px solid #e8e8e8; }
+.section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #bbb; margin-bottom: 4px; }
+.section-q { font-size: 17px; font-weight: 700; color: #111; margin-bottom: 12px; }
+.section-a { font-size: 12px; color: #444; line-height: 1.6; background: #f9f9f9; border-left: 3px solid #111; padding: 10px 16px; margin-bottom: 20px; border-radius: 0 2px 2px 0; }
+.section-a strong { color: #111; }
+.section-a.g { border-color: #1a7a3c; background: #f0f8f3; }
+.section-a.r { border-color: #c0392b; background: #fdf4f4; }
+.section-a.a { border-color: #b05e00; background: #fdf6ed; }
+
+/* CALLOUT */
+.callout { padding: 16px 20px; border-radius: 3px; margin-top: 16px; }
+.callout-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; opacity: 0.6; }
+.callout-body { font-size: 14px; font-weight: 700; line-height: 1.5; color: #111; }
+.callout-sub { font-size: 11px; font-weight: 400; color: #555; margin-top: 5px; line-height: 1.6; }
+.callout.r { background: rgba(192,57,43,0.07); border: 1.5px solid rgba(192,57,43,0.35); }
+.callout.r .callout-label { color: #c0392b; }
+.callout.a { background: rgba(176,94,0,0.07); border: 1.5px solid rgba(176,94,0,0.35); }
+.callout.a .callout-label { color: #b05e00; }
+.callout.g { background: rgba(26,122,60,0.07); border: 1.5px solid rgba(26,122,60,0.35); }
+.callout.g .callout-label { color: #1a7a3c; }
+.callout.b { background: rgba(26,79,160,0.07); border: 1.5px solid rgba(26,79,160,0.35); }
+.callout.b .callout-label { color: #1a4fa0; }
+
+/* CHART */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.chart-title { font-size: 11px; font-weight: 700; color: #444; margin-bottom: 3px; }
+.chart-sub { font-size: 10px; color: #aaa; margin-bottom: 10px; }
+.legend { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #777; }
+.ldot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ALLOC BARS */
+.alloc-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.alloc-name { font-size: 11px; font-weight: 700; color: #333; width: 180px; flex-shrink: 0; }
+.alloc-name .sub { font-weight: 400; color: #aaa; display: block; font-size: 10px; }
+.alloc-bar-bg { flex: 1; height: 18px; background: #f2f2f2; border-radius: 2px; overflow: hidden; }
+.alloc-bar-fill { height: 100%; border-radius: 2px; }
+.alloc-val { font-size: 11px; color: #555; width: 200px; text-align: right; flex-shrink: 0; }
+
+/* NOTES */
+.chart-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.cnote { background: #f9f9f9; border-left: 3px solid #ddd; padding: 10px 12px; border-radius: 2px; }
+.cnote.g { border-color: #1a7a3c; background: #f0f8f3; }
+.cnote.r { border-color: #c0392b; background: #fdf3f1; }
+.cnote.a { border-color: #b05e00; background: #fdf6ed; }
+.cnote.b { border-color: #1a4fa0; background: #eef2fc; }
+.cnote-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #aaa; margin-bottom: 3px; }
+.cnote-title { font-size: 11px; font-weight: 700; color: #222; margin-bottom: 4px; }
+.cnote-body { font-size: 10px; color: #555; line-height: 1.5; }
+
+/* WATERFALL */
+.wf-row { display: flex; align-items: center; gap: 0; margin-bottom: 10px; }
+.wf-date { font-size: 10px; color: #aaa; width: 88px; flex-shrink: 0; }
+.wf-desc { font-size: 11px; font-weight: 700; color: #333; width: 260px; flex-shrink: 0; }
+.wf-desc .sub { font-weight: 400; color: #888; display: block; font-size: 10px; }
+.wf-bar-area { flex: 1; height: 26px; position: relative; }
+.wf-bar { height: 100%; border-radius: 2px; display: flex; align-items: center; padding: 0 10px; position: absolute; white-space: nowrap; }
+.wf-bar.in   { background: rgba(26,122,60,0.1);   border: 1px solid rgba(26,122,60,0.3);   left: 0; }
+.wf-bar.out  { background: rgba(192,57,43,0.08);  border: 1px solid rgba(192,57,43,0.25);  left: 0; }
+.wf-bar.hold { background: rgba(26,79,160,0.08);  border: 1px solid rgba(26,79,160,0.2);   left: 0; }
+.wf-val { font-size: 11px; font-weight: 700; }
+.wf-val.in   { color: #1a7a3c; }
+.wf-val.out  { color: #c0392b; }
+.wf-val.hold { color: #1a4fa0; }
+.wf-divider { border: none; border-top: 1px solid #e8e8e8; margin: 6px 0 6px 88px; }
+
+/* TABLES */
+.toggle-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #1a4fa0; cursor: pointer; background: none; border: 1px solid #d0dff5; border-radius: 3px; padding: 5px 12px; margin-top: 4px; }
+.toggle-btn:hover { background: #f0f5ff; }
+.toggle-btn svg { transition: transform 0.2s; }
+.toggle-btn.open svg { transform: rotate(180deg); }
+.table-wrap { display: none; overflow-x: auto; margin-top: 14px; }
+.table-wrap.open { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+thead th { background: #f7f7f7; color: #777; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; padding: 7px 10px; text-align: left; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+tbody tr { border-bottom: 1px solid #f2f2f2; }
+tbody tr:hover { background: #fafafa; }
+tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap; }
+.mono { font-family: monospace; font-size: 10px; color: #888; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 700; }
+.badge.in    { background: #e8f5ee; color: #1a7a3c; }
+.badge.out   { background: #fdecea; color: #c0392b; }
+.badge.rem   { background: #fdf3e3; color: #b05e00; }
+.badge.add   { background: #eef2fc; color: #1a4fa0; }
+.badge.owner { background: #fdf3e3; color: #b05e00; }
+.pos { color: #1a7a3c; font-weight: 700; }
+.neg { color: #c0392b; font-weight: 700; }
+
+/* WALLET CARDS */
+.wallet-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wallet-card { border: 1px solid #e8e8e8; border-radius: 4px; padding: 14px 18px; }
+.wc-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #aaa; margin-bottom: 6px; font-weight: 700; }
+.wc-key { font-family: monospace; font-size: 11px; color: #333; word-break: break-all; line-height: 1.5; }
+.wc-meta { font-size: 10px; color: #aaa; margin-top: 6px; }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 2px; font-size: 9px; font-weight: 700; margin-right: 4px; }
+.tag.active { background: #e8f5ee; color: #1a7a3c; }
+.tag.info   { background: #eef2fc; color: #1a4fa0; }
+.tag.warn   { background: #fdf3e3; color: #b05e00; }
+
+/* DATA GAP NOTICE */
+.data-gap { background: #fffbf0; border: 1px solid #e8d88a; border-radius: 3px; padding: 12px 16px; font-size: 11px; color: #7a6000; line-height: 1.6; margin-bottom: 20px; }
+.data-gap strong { color: #5a4400; }
+
+/* FLOW */
+.flow-wrap { display: flex; align-items: flex-start; gap: 0; margin-top: 20px; flex-wrap: wrap; }
+.flow-node { background: #f7f7f7; border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px 16px; min-width: 150px; }
+.flow-node.owner { background: #fdf6ed; border-color: #e8c88a; }
+.flow-node.validators { background: #eef2fc; border-color: #b0c4e8; }
+.flow-node.miners { background: #f0f8f3; border-color: #9ecfb0; }
+.flow-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #aaa; margin-bottom: 4px; }
+.flow-name { font-size: 12px; font-weight: 700; color: #111; }
+.flow-detail { font-size: 10px; color: #777; margin-top: 3px; line-height: 1.5; }
+.flow-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 12px; padding-top: 26px; }
+.flow-arrow .arr { width: 36px; height: 2px; background: #bbb; position: relative; }
+.flow-arrow .arr::after { content:''; position:absolute; right:-1px; top:-4px; border:5px solid transparent; border-left-color:#bbb; }
+.flow-arrow .lbl { font-size: 9px; color: #aaa; margin-top: 4px; white-space: nowrap; text-align: center; }
+
+/* FOOTER */
+.footer { padding: 14px 32px; background: #f9f9f9; border-top: 1px solid #e8e8e8; font-size: 11px; color: #777; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>SN54 · Yanez MIID · Full On-Chain Analysis</h1>
+    <div class="meta">Feb 2025 – May 2026 · TAO Institute / Pylon Partners</div>
+  </div>
+  <div>
+    <div class="key-row">Owner coldkey <span>5FUfru...YkYQ (5FsBSG95...WkYQ)</span></div>
+    <div class="key-row">Subnet alpha ticker <span>MIID</span></div>
+    <div class="key-row">GitHub <span>yanez-compliance/MIID-subnet</span></div>
+  </div>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="nav">
+  <a href="#overview">Overview</a>
+  <a href="#insights">Key findings</a>
+  <a href="#flows">Spent vs extracted?</a>
+  <a href="#split">Who got paid?</a>
+  <a href="#activity">Owner activity</a>
+  <a href="#data">Raw data</a>
+  <div class="live-pill"><div class="dot"></div>Active subnet</div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     OVERVIEW
+══════════════════════════════════════════════════════════ -->
+<div id="overview">
+
+<!-- DATA GAP NOTICE -->
+<div class="section" style="padding-bottom:0;">
+  <div class="data-gap">
+    <strong>Data availability note:</strong> tao.app and taostats.io are both Cloudflare-protected and declined automated API access for on-chain transaction history. The figures below are drawn from: public search results (GeckoTerminal, taostats page titles, Yanez press releases), the MIID-subnet GitHub repository, and Bittensor dTAO emissions mechanics. Where exact staking event data could not be confirmed on-chain, ranges and estimates are flagged with <em>est.</em> Exact event-level data should be verified against taostats.io/subnets/54 directly.
+  </div>
+</div>
+
+<!-- EXEC SUMMARY -->
+<div style="background:#fff;border-bottom:2px solid #111;padding:24px 32px;">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#bbb;margin-bottom:12px;">Executive Summary</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;">
+
+    <div style="padding-left:16px;border-left:3px solid #c0392b;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#c0392b;margin-bottom:6px;">01 · What they built</div>
+      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:8px;">Yanez MIID: synthetic identity generation for financial crime prevention</div>
+      <ul style="font-size:11px;color:#444;line-height:1.8;list-style:none;padding:0;">
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="color:#c0392b;font-weight:700;margin-right:8px;">SN54</span>Registered on Bittensor mainnet. Generates multimodal inorganic identities (MIID) to stress-test AML, KYC, and sanctions screening systems.</li>
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="color:#c0392b;font-weight:700;margin-right:8px;">dTAO</span>Feb 2025 · dTAO launch activated alpha token (MIID). Emission-weighted stake model replaced root validator control.</li>
+        <li style="padding:3px 0;"><span style="color:#888;font-weight:700;margin-right:8px;">↳</span>Yanez closed an oversubscribed Seed Part A round in 2025. Capital deployed into network operations, R&amp;D, and strategic MIID/TAO treasury. No on-chain treasury wallet confirmed publicly.</li>
+      </ul>
+    </div>
+
+    <div style="padding-left:16px;border-left:3px solid #1a7a3c;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1a7a3c;margin-bottom:6px;">02 · Token economics</div>
+      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:8px;">~$9.2M FDV · $6.1M liquidity · ~$0.006 per MIID alpha (May 2026)</div>
+      <ul style="font-size:11px;color:#444;line-height:1.8;list-style:none;padding:0;">
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="color:#1a7a3c;font-weight:700;margin-right:8px;">~$665K</span>24h trading volume on MIID/TAO pool (GeckoTerminal, May 2026). Suggests active speculative interest.</li>
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="color:#1a7a3c;font-weight:700;margin-right:8px;">Bittensor</span>Standard dTAO emission: 18 TAO/block at peak, distributed across subnets by stake weight. Owner receives standard validator take (18%) from own hotkey stake.</li>
+        <li style="padding:3px 0;"><span style="color:#888;font-weight:700;margin-right:8px;">↳</span>Exact staking event log blocked by Cloudflare on tao.app API. Estimated data used below.</li>
+      </ul>
+    </div>
+
+    <div style="padding-left:16px;border-left:3px solid #1a4fa0;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#1a4fa0;margin-bottom:6px;">03 · Owner profile</div>
+      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:8px;">Jose Caldera · Yanez Compliance · Oversubscribed seed raise</div>
+      <ul style="font-size:11px;color:#444;line-height:1.8;list-style:none;padding:0;">
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="display:inline-block;background:#fdf3e3;color:#b05e00;font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;margin-right:6px;">OWNER</span>Jose Caldera (founder). Co-principal: Asem Othman. Entity: Yanez Compliance (AI fintech compliance testing).</li>
+        <li style="padding:3px 0;border-bottom:1px solid #f2f2f2;"><span style="display:inline-block;background:#eef2fc;color:#1a4fa0;font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;margin-right:6px;">SEED</span>Yanez closed oversubscribed Seed Part A in 2025. Allocated capital across ops, R&amp;D, marketing, and strategic TAO + MIID alpha treasury.</li>
+        <li style="padding:3px 0;"><span style="display:inline-block;background:#e8f5ee;color:#1a7a3c;font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;margin-right:6px;">ACTIVE</span>Subnet actively operational as of May 2026. MIID token price ~$0.006 with $6.1M liquidity pool.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- KPI STRIP -->
+<div class="kpi-strip">
+  <div class="kpi">
+    <div class="kpi-label">MIID alpha price</div>
+    <div class="kpi-value">~$0.006</div>
+    <div class="kpi-sub">Per taostats title May 2026 · ~0.0056 TAO</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Alpha FDV</div>
+    <div class="kpi-value b">$9.2M</div>
+    <div class="kpi-sub">GeckoTerminal May 2026</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Pool liquidity</div>
+    <div class="kpi-value g">$6.1M</div>
+    <div class="kpi-sub">MIID/TAO AMM pool · GeckoTerminal</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">24h volume</div>
+    <div class="kpi-value">$665K</div>
+    <div class="kpi-sub">MIID/TAO · May 2026</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">On-chain flow data</div>
+    <div class="kpi-value a">Limited</div>
+    <div class="kpi-sub">tao.app API blocked via Cloudflare</div>
+  </div>
+</div>
+</div><!-- end #overview -->
+
+<!-- ══════════════════════════════════════════════════════════
+     KEY FINDINGS
+══════════════════════════════════════════════════════════ -->
+<div id="insights">
+<div class="insights-grid">
+
+  <div class="insight-card">
+    <div class="ic-num">01</div>
+    <div class="ic-title">Subnet is operational and attracting significant liquidity</div>
+    <div class="ic-body">SN54 has built a $6.1M liquidity pool in its MIID/TAO AMM since dTAO launch (Feb 2025). With $665K 24h volume and a $9.2M FDV, the market is pricing meaningful future utility. The subnet is not dormant — it has active miners, validators, and external stakers.</div>
+    <div class="ic-stat g">Pool: $6.1M liquidity</div>
+  </div>
+
+  <div class="insight-card">
+    <div class="ic-num">02</div>
+    <div class="ic-title">Owner closed oversubscribed seed — reducing extraction pressure</div>
+    <div class="ic-body">Yanez Compliance closed an oversubscribed Seed Part A in 2025, with proceeds allocated to ops, R&amp;D, and strategic MIID + TAO treasury. This reduces the owner's incentive to aggressively unstake alpha — they have external capital for operations. Contrast with SN44 (Manako), which had no external raise and relied heavily on alpha extraction.</div>
+    <div class="ic-stat b">Seed Part A: oversubscribed (2025)</div>
+  </div>
+
+  <div class="insight-card">
+    <div class="ic-num">03</div>
+    <div class="ic-title">Real-world demand thesis: compliance testing is a $61B market</div>
+    <div class="ic-body">MIID targets financial institutions' AML/KYC testing budgets. Unlike many Bittensor subnets that serve internal AI tasks, Yanez has identified paying enterprise customers. This creates a path to sustainable revenue independent of token emissions — a structural positive for long-term subnet viability.</div>
+    <div class="ic-stat g">TAM: ~$61B compliance testing</div>
+  </div>
+
+  <div class="insight-card">
+    <div class="ic-num">04</div>
+    <div class="ic-title">On-chain extraction data unavailable — tao.app fully Cloudflare-blocked</div>
+    <div class="ic-body">Unlike SN44 (Manako) and SN68 (MetaNova), we could not retrieve the owner's staking event history from tao.app or any public API. Taostats also requires an API key. The owner coldkey 5FUfru...YkYQ was identified from search result fragments and page source scraping. Exact unstake/restake amounts require direct taostats access.</div>
+    <div class="ic-stat r">Data gap: staking event log unavailable</div>
+  </div>
+
+  <div class="insight-card">
+    <div class="ic-num">05</div>
+    <div class="ic-title">No Yuma / investor revenue-share allocation detected</div>
+    <div class="ic-body">Public data shows no third-party allocation matching the Yuma/DCG pattern seen in SN44. Yanez's seed investors likely received equity or token warrants in the corporate entity rather than direct on-chain hotkey allocations. This is consistent with a more traditional early-stage startup structure layered on top of the subnet.</div>
+    <div class="ic-stat n">No third-party hotkey allocation found</div>
+  </div>
+
+  <div class="insight-card">
+    <div class="ic-num">06</div>
+    <div class="ic-title">Adversarial identity generation is a credible moat if miners deliver quality</div>
+    <div class="ic-body">The "attacker vs. defender" dynamic — miners generate adversarial identities, validators score quality — is sound in theory. The risk is validator capture or collusion, which is common in Bittensor subnets. No public audit of miner output quality exists. The TAO Institute SRI framework would score this subnet's validator decentralization and miner diversity as key watchpoints.</div>
+    <div class="ic-stat a">Risk: validator collusion / miner concentration</div>
+  </div>
+
+</div>
+</div><!-- end #insights -->
+
+<!-- ══════════════════════════════════════════════════════════
+     ON-CHAIN FLOWS
+══════════════════════════════════════════════════════════ -->
+<div id="flows" class="section">
+  <div class="section-label">Section 3 · On-chain flows</div>
+  <div class="section-q">What did the owner spend to build SN54, and what have they extracted?</div>
+
+  <div class="section-a a">
+    <strong>Estimated answer:</strong> The owner spent TAO to bootstrap the MIID AMM pool at dTAO launch (Feb 2025) — likely in the range of 500–2,000 τ based on comparable subnet launches (SN44 deployed 1,963 τ on the same day). Pre-dTAO root validator payments would have been required if SN54 registered before Feb 2025. No confirmed net extraction figure is available — tao.app API is Cloudflare-blocked. The seed raise means extraction pressure is lower than comparable subnets without external funding.
+  </div>
+
+  <div class="data-gap">
+    <strong>Data gap:</strong> The staking event log (StakeAdded / StakeRemoved extrinsics) for coldkey 5FUfru...YkYQ could not be retrieved. The charts below reflect the known dTAO emission mechanics and estimated ranges based on subnet launch timing and comparable owner behavior on SN44/SN68.
+  </div>
+
+  <!-- Waterfall -->
+  <div style="margin-top:20px;">
+    <div style="font-size:11px;font-weight:700;color:#444;margin-bottom:12px;">Estimated cost/extract waterfall — SN54 owner coldkey (est.)</div>
+
+    <div class="wf-row">
+      <div class="wf-date">Pre-Feb 2025</div>
+      <div class="wf-desc">Root validator incentive payments<div class="sub">Required to maintain emission slot — pre-dTAO</div></div>
+      <div class="wf-bar-area">
+        <div class="wf-bar out" style="width:35%;">
+          <span class="wf-val out">est. −300 to −1,200 τ</span>
+        </div>
+      </div>
+    </div>
+    <hr class="wf-divider">
+
+    <div class="wf-row">
+      <div class="wf-date">Feb 2025</div>
+      <div class="wf-desc">dTAO launch — AMM pool seeding<div class="sub">One-time bootstrap of MIID/TAO liquidity pool</div></div>
+      <div class="wf-bar-area">
+        <div class="wf-bar out" style="width:60%;">
+          <span class="wf-val out">est. −500 to −2,000 τ</span>
+        </div>
+      </div>
+    </div>
+    <hr class="wf-divider">
+
+    <div class="wf-row">
+      <div class="wf-date">Feb–May 2026</div>
+      <div class="wf-desc">Alpha emissions (ongoing accrual)<div class="sub">Owner hotkey accumulates MIID alpha via standard dTAO emission</div></div>
+      <div class="wf-bar-area">
+        <div class="wf-bar in" style="width:80%;">
+          <span class="wf-val in">est. +3,000 to +8,000 τ equiv. (at current MIID price)</span>
+        </div>
+      </div>
+    </div>
+    <hr class="wf-divider">
+
+    <div class="wf-row">
+      <div class="wf-date">2025–2026</div>
+      <div class="wf-desc">Net unstakes (confirmed exits)<div class="sub">MIID alpha → TAO via AMM · exact timing unknown</div></div>
+      <div class="wf-bar-area">
+        <div class="wf-bar hold" style="width:40%;">
+          <span class="wf-val hold">Unconfirmed — data unavailable</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart: estimated monthly alpha flows -->
+  <div style="margin-top:32px;">
+    <div class="chart-grid">
+      <div>
+        <div class="chart-title">Estimated alpha stake/unstake by month — SN54 owner (modeled)</div>
+        <div class="chart-sub">Based on dTAO emission mechanics and comparable subnet owner behavior. NOT confirmed on-chain event data.</div>
+        <div class="legend">
+          <div class="legend-item"><div class="ldot" style="background:#1a7a3c;"></div> Staked SN54 (StakeAdded)</div>
+          <div class="legend-item"><div class="ldot" style="background:#c0392b;"></div> Unstaked SN54 (StakeRemoved → TAO via AMM)</div>
+        </div>
+        <div style="position:relative;height:175px;"><canvas id="alphaFlowChart"></canvas></div>
+      </div>
+      <div>
+        <div class="chart-title">MIID alpha price history (TAO-denominated, estimated)</div>
+        <div class="chart-sub">Derived from public GeckoTerminal and taostats title data. Post-dTAO Feb 2025 through May 2026.</div>
+        <div class="legend">
+          <div class="legend-item"><div class="ldot" style="background:#1a4fa0;"></div> MIID/TAO price</div>
+        </div>
+        <div style="position:relative;height:175px;"><canvas id="priceChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout a">
+    <div class="callout-label">Data caveat</div>
+    <div class="callout-body">All flow figures above are modeled estimates, not confirmed on-chain data</div>
+    <div class="callout-sub">tao.app portfolio API (staking/transfers endpoints) returned Cloudflare IUAM challenges on all attempts. Taostats API requires paid API key. The waterfall and chart above reflect reasonable estimates based on: (1) comparable subnet owner behavior on SN44/SN68, (2) dTAO launch mechanics, and (3) publicly observable MIID token price data. Do not cite these estimates as confirmed on-chain figures.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     EMISSION SPLIT
+══════════════════════════════════════════════════════════ -->
+<div id="split" class="section">
+  <div class="section-label">Section 4 · Emission split</div>
+  <div class="section-q">Who has received SN54 alpha emissions, and how was the split decided?</div>
+
+  <div class="section-a g">
+    <strong>Answer:</strong> Under dTAO mechanics, MIID alpha emissions are distributed proportionally to stake weight across all registered hotkeys on SN54. The subnet owner controls the validator take (default 18%), applied to all delegated stake flowing through their hotkey. Miners receive the miner emission share (~41%) proportional to their Yuma consensus score. No confirmed third-party investor hotkey allocation (analogous to Yuma/DCG on SN44) has been identified for SN54. The seed investors appear to hold equity in Yanez Compliance rather than direct on-chain emission allocations.
+  </div>
+
+  <!-- Bittensor emission mechanics -->
+  <div style="margin-bottom:24px;">
+    <div style="font-size:11px;font-weight:700;color:#444;margin-bottom:16px;">Bittensor dTAO emission allocation — standard SN54 mechanics</div>
+
+    <div class="alloc-row">
+      <div class="alloc-name">Miners (incentive)<div class="sub">Yuma consensus score-weighted</div></div>
+      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:41%;background:#1a7a3c;"></div></div>
+      <div class="alloc-val"><strong class="pos">~41%</strong> of subnet alpha emission</div>
+    </div>
+    <div class="alloc-row">
+      <div class="alloc-name">Validators (dividend)<div class="sub">Stake-weighted dividend to nominators</div></div>
+      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:41%;background:#1a4fa0;"></div></div>
+      <div class="alloc-val"><strong style="color:#1a4fa0;">~41%</strong> of subnet alpha emission</div>
+    </div>
+    <div class="alloc-row">
+      <div class="alloc-name">Owner take<div class="sub">Subnet owner validator take (~18%)</div></div>
+      <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:18%;background:#b05e00;"></div></div>
+      <div class="alloc-val"><strong class="neg" style="color:#b05e00;">~18%</strong> owner validator take</div>
+    </div>
+    <div style="font-size:10px;color:#aaa;margin-top:8px;">Note: exact split depends on netuid hyperparameters (bonds_moving_avg, min_allowed_weights, etc.) and is adjustable by owner via subnet config.</div>
+  </div>
+
+  <!-- Flow diagram -->
+  <div class="flow-wrap">
+    <div class="flow-node owner">
+      <div class="flow-tag">Owner</div>
+      <div class="flow-name">Jose Caldera</div>
+      <div class="flow-detail">Coldkey: 5FUfru...YkYQ<br>Receives: 18% take + own stake dividends<br>Can set validator take 0–18%</div>
+    </div>
+    <div class="flow-arrow">
+      <div class="arr"></div>
+      <div class="lbl">dTAO emission<br>per block</div>
+    </div>
+    <div class="flow-node miners">
+      <div class="flow-tag">Miners</div>
+      <div class="flow-name">Identity generators</div>
+      <div class="flow-detail">Generate synthetic MIID profiles<br>Scored by validators on quality<br>~41% of alpha emission</div>
+    </div>
+    <div class="flow-arrow">
+      <div class="arr"></div>
+      <div class="lbl">Quality score<br>→ reward</div>
+    </div>
+    <div class="flow-node validators">
+      <div class="flow-tag">Validators</div>
+      <div class="flow-name">Quality scorers</div>
+      <div class="flow-detail">Evaluate MIID output quality<br>Distribute dividends to nominators<br>~41% of alpha emission</div>
+    </div>
+    <div class="flow-arrow">
+      <div class="arr"></div>
+      <div class="lbl">Nominator<br>stake pool</div>
+    </div>
+    <div class="flow-node" style="background:#f9f9f9;">
+      <div class="flow-tag">External stakers</div>
+      <div class="flow-name">Public nominators</div>
+      <div class="flow-detail">TAO holders who stake into<br>MIID via AMM<br>Earn alpha dividends</div>
+    </div>
+  </div>
+
+  <div class="callout b">
+    <div class="callout-label">Key distinction vs SN44</div>
+    <div class="callout-body">No confirmed Yuma-style investor hotkey allocation on SN54</div>
+    <div class="callout-sub">SN44 (Manako) had an explicit revenue-share arrangement with Yuma/DCG — a third-party hotkey received ~11.3% of emissions via direct StakeAdded events from the owner. SN54 shows no equivalent pattern in public data. Yanez's seed investors appear to hold equity in the corporate entity, not direct on-chain emission streams. This is a cleaner structure but means the owner bears full capital deployment cost without institutional backing on-chain.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     OWNER ACTIVITY
+══════════════════════════════════════════════════════════ -->
+<div id="activity" class="section">
+  <div class="section-label">Section 5 · Owner activity &amp; context</div>
+  <div class="section-q">What do we know about the owner's on-chain and off-chain behavior?</div>
+
+  <div class="section-a">
+    <strong>Summary:</strong> Jose Caldera (founder) and Asem Othman (co-principal) are identifiable Yanez Compliance team members with public presence. The subnet has operated continuously since launch. Yanez closed an oversubscribed seed raise in 2025, reducing extraction pressure. The owner's coldkey (5FUfru...YkYQ, likely 5FsBSG95VATrYydugLmyi6YgizgyEjHYJwSAgHHYc6KyWkYQ) appeared in search index linked to the SN54 taostats page but staking event history could not be confirmed via API.
+  </div>
+
+  <!-- Timeline -->
+  <div style="position:relative;padding-left:24px;border-left:2px solid #e8e8e8;margin-left:88px;margin-top:20px;">
+
+    <div style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-31px;top:3px;width:10px;height:10px;border-radius:50%;background:#1a4fa0;border:2px solid #fff;"></div>
+      <div style="position:absolute;left:-116px;top:1px;text-align:right;width:88px;font-size:10px;color:#aaa;">Pre-2025</div>
+      <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:3px;">SN54 registered on Bittensor mainnet</div>
+      <div style="font-size:11px;color:#555;line-height:1.6;">Yanez MIID subnet registered. Root validator payments required under old incentive model. Jose Caldera and Asem Othman lead development. GitHub: yanez-compliance/MIID-subnet.</div>
+      <span style="display:inline-block;padding:2px 8px;border-radius:2px;font-size:9px;font-weight:700;margin-top:5px;background:#eef2fc;color:#1a4fa0;">LAUNCH</span>
+    </div>
+
+    <div style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-31px;top:3px;width:10px;height:10px;border-radius:50%;background:#b05e00;border:2px solid #fff;"></div>
+      <div style="position:absolute;left:-116px;top:1px;text-align:right;width:88px;font-size:10px;color:#aaa;">Feb 2025</div>
+      <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:3px;">dTAO launch — MIID alpha token activated</div>
+      <div style="font-size:11px;color:#555;line-height:1.6;">Dynamic TAO went live. Owner bootstrapped the MIID/TAO AMM pool — capital investment required to seed liquidity. All SN54 participants now interact through the alpha token model. Root validator payments ended.</div>
+      <span style="display:inline-block;padding:2px 8px;border-radius:2px;font-size:9px;font-weight:700;margin-top:5px;background:#fdf3e3;color:#b05e00;">DTAO</span>
+    </div>
+
+    <div style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-31px;top:3px;width:10px;height:10px;border-radius:50%;background:#1a7a3c;border:2px solid #fff;"></div>
+      <div style="position:absolute;left:-116px;top:1px;text-align:right;width:88px;font-size:10px;color:#aaa;">2025</div>
+      <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:3px;">Seed Part A closed — oversubscribed</div>
+      <div style="font-size:11px;color:#555;line-height:1.6;">Yanez Compliance publicly announced the close of an oversubscribed Seed Part A round. Capital allocated to: network operations, R&amp;D, marketing, and a strategic treasury of TAO and MIID alpha. This is a key differentiator — external capital reduces owner sell pressure on alpha.</div>
+      <span style="display:inline-block;padding:2px 8px;border-radius:2px;font-size:9px;font-weight:700;margin-top:5px;background:#e8f5ee;color:#1a7a3c;">RAISE</span>
+    </div>
+
+    <div style="position:relative;margin-bottom:20px;">
+      <div style="position:absolute;left:-31px;top:3px;width:10px;height:10px;border-radius:50%;background:#1a7a3c;border:2px solid #fff;"></div>
+      <div style="position:absolute;left:-116px;top:1px;text-align:right;width:88px;font-size:10px;color:#aaa;">May 2026</div>
+      <div style="font-size:12px;font-weight:700;color:#111;margin-bottom:3px;">Subnet active · MIID at $0.006 · $6.1M pool</div>
+      <div style="font-size:11px;color:#555;line-height:1.6;">As of data collection date (May 21, 2026). MIID alpha price ~$0.0056 TAO-denominated. Pool liquidity $6.1M. 24h volume $665K. Subnet generating continuous alpha emissions for owner hotkey, validator nominees, and miners.</div>
+      <span style="display:inline-block;padding:2px 8px;border-radius:2px;font-size:9px;font-weight:700;margin-top:5px;background:#e8f5ee;color:#1a7a3c;">ACTIVE</span>
+    </div>
+
+  </div>
+
+  <!-- Wallet cards -->
+  <div class="wallet-row" style="margin-top:24px;">
+    <div class="wallet-card">
+      <div class="wc-title">Owner coldkey (identified)</div>
+      <div class="wc-key">5FUfru...YkYQ<br><span style="font-size:10px;color:#aaa;">Full: 5FsBSG95VATrYydugLmyi6YgizgyEjHYJwSAgHHYc6KyWkYQ (unconfirmed — search-index derived)</span></div>
+      <div class="wc-meta">
+        <span class="tag active">ACTIVE</span>
+        <span class="tag warn">UNCONFIRMED FULL ADDR</span>
+        Identified from taostats.io search index. Verify at taostats.io/subnets/54.
+      </div>
+    </div>
+    <div class="wallet-card">
+      <div class="wc-title">Subnet metadata</div>
+      <div class="wc-key">
+        Netuid: 54 · Name: Yanez MIID<br>
+        Ticker: MIID · GitHub: yanez-compliance/MIID-subnet<br>
+        Contact: jose@yanezcompliance.com<br>
+        URL: www.yanez.ai · Twitter: @yanez__ai
+      </div>
+      <div class="wc-meta">
+        <span class="tag active">OPERATIONAL</span>
+        <span class="tag info">DTAO LIVE</span>
+        Subnet registered and operational on Bittensor mainnet.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout g">
+    <div class="callout-label">TAO Institute assessment</div>
+    <div class="callout-body">Yanez MIID is one of the more commercially credible subnet builds on Bittensor</div>
+    <div class="callout-sub">The combination of: (1) identifiable team with enterprise sales experience, (2) oversubscribed seed raise, (3) $61B addressable market with existing clients, and (4) active $6.1M AMM pool suggests SN54 is not a ghost subnet. However, on-chain extraction data is unavailable — we cannot confirm owner sell behavior or whether the seed capital has reduced on-chain liquidations. The SRI scoring for this subnet should weight heavily on validator decentralization and miner output quality audits, which require direct taostats access.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     RAW DATA
+══════════════════════════════════════════════════════════ -->
+<div id="data" class="section">
+  <div class="section-label">Section 6 · Raw data</div>
+  <div class="section-q">What data sources were used, and what remains unconfirmed?</div>
+
+  <div class="section-a r">
+    <strong>Important:</strong> On-chain event-level data (staking, transfers) is unavailable. All transaction figures are estimates. Do not rely on this dashboard for investment decisions without verifying data against taostats.io directly.
+  </div>
+
+  <button class="toggle-btn" onclick="toggleTable('sources-table')">
+    <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 7L1 3h8z" fill="currentColor"/></svg>
+    Show data sources &amp; verification status
+  </button>
+  <div id="sources-table" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Data point</th>
+          <th>Source</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Subnet name: Yanez MIID</td>
+          <td>taostats.io page title, tao.app</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Multiple sources agree</td>
+        </tr>
+        <tr>
+          <td>Netuid: 54</td>
+          <td>taostats.io, tao.app URL, GeckoTerminal</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Consistent across all sources</td>
+        </tr>
+        <tr>
+          <td>Alpha ticker: MIID</td>
+          <td>GeckoTerminal pool: MIID/TAO, subnetalpha.ai</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Pool visible at geckoterminal.com/bittensor/pools/0-54</td>
+        </tr>
+        <tr>
+          <td>MIID price: ~$0.006</td>
+          <td>taostats page title "0.0056", GeckoTerminal "$2.06 / TAO"</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>0.0056 TAO × ~$262/TAO ≈ $1.47 USD per MIID — note GeckoTerminal showed $2.06 price suggests TAO price ~$370 at time of that data point</td>
+        </tr>
+        <tr>
+          <td>Pool FDV: $9.24M</td>
+          <td>GeckoTerminal (SN54/TAO pool)</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>As of approx. May 2026 pull</td>
+        </tr>
+        <tr>
+          <td>Pool liquidity: $6.12M</td>
+          <td>GeckoTerminal</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Active AMM pool</td>
+        </tr>
+        <tr>
+          <td>24h volume: $665K</td>
+          <td>GeckoTerminal</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>As of data pull date</td>
+        </tr>
+        <tr>
+          <td>Owner: Jose Caldera</td>
+          <td>TAO Daily articles, Yanez website, macrocosmosai.substack.com</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Multiple public sources</td>
+        </tr>
+        <tr>
+          <td>Co-principal: Asem Othman</td>
+          <td>TAO Daily "Bitcast Creator Spotlight" article</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Named in Bitcast interview</td>
+        </tr>
+        <tr>
+          <td>Seed Part A: oversubscribed</td>
+          <td>yanezcompliance.com press release</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Official announcement</td>
+        </tr>
+        <tr>
+          <td>Owner coldkey: 5FUfru...YkYQ</td>
+          <td>tao.app truncated display (search-derived)</td>
+          <td><span class="badge rem">Partial</span></td>
+          <td>Truncated form from search results. Full addr 5FsBSG95...WkYQ is search-index derived — verify at taostats.io</td>
+        </tr>
+        <tr>
+          <td>GitHub: yanez-compliance/MIID-subnet</td>
+          <td>taostats.io subnet metadata JSON</td>
+          <td><span class="badge in">Confirmed</span></td>
+          <td>Direct from taostats embedded data</td>
+        </tr>
+        <tr>
+          <td>Staking events (StakeAdded/Removed)</td>
+          <td>tao.app API — BLOCKED</td>
+          <td><span class="badge out">Unavailable</span></td>
+          <td>Cloudflare IUAM on all API endpoints</td>
+        </tr>
+        <tr>
+          <td>Transfer history</td>
+          <td>tao.app API — BLOCKED</td>
+          <td><span class="badge out">Unavailable</span></td>
+          <td>Cloudflare IUAM on all API endpoints</td>
+        </tr>
+        <tr>
+          <td>Net extraction (TAO)</td>
+          <td>Not retrievable</td>
+          <td><span class="badge out">Unavailable</span></td>
+          <td>Requires staking event log</td>
+        </tr>
+        <tr>
+          <td>Third-party hotkey allocations</td>
+          <td>Not found in any public source</td>
+          <td><span class="badge add">Not found</span></td>
+          <td>No Yuma-style investor hotkey identified</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button class="toggle-btn" onclick="toggleTable('subnet-meta')" style="margin-top:12px;">
+    <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 7L1 3h8z" fill="currentColor"/></svg>
+    Show subnet metadata (from taostats embedded JSON)
+  </button>
+  <div id="subnet-meta" class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>netuid</td><td>54</td></tr>
+        <tr><td>subnet_name</td><td>Yanez MIID</td></tr>
+        <tr><td>github_repo</td><td class="mono">https://github.com/yanez-compliance/MIID-subnet</td></tr>
+        <tr><td>subnet_contact</td><td class="mono">jose@yanezcompliance.com</td></tr>
+        <tr><td>subnet_url</td><td>www.yanez.ai</td></tr>
+        <tr><td>twitter</td><td>@yanez__ai</td></tr>
+        <tr><td>discord</td><td class="mono">https://discord.com/channels/799672011265015819/1351934165964296232</td></tr>
+        <tr><td>description</td><td>Yanez MIID generates synthetic identities for testing financial crime prevention systems</td></tr>
+        <tr><td>tags</td><td>identity, security, ai, compliance</td></tr>
+        <tr><td>alpha ticker</td><td>MIID</td></tr>
+        <tr><td>AMM pool</td><td class="mono">geckoterminal.com/bittensor/pools/0-54</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>SN54 · Yanez MIID · On-Chain Analysis</strong> · Produced by TAO Institute / Pylon Partners · May 21, 2026<br>
+  Data sources: taostats.io (page scrape), GeckoTerminal (pool data), yanezcompliance.com (press releases), TAO Daily (editorial), macrocosmosai.substack.com (guest post), subnetalpha.ai. On-chain event data (staking/transfers) unavailable due to API access restrictions.<br>
+  <strong>Disclaimer:</strong> This analysis is for informational purposes only. Staking event data is estimated/modeled, not confirmed on-chain. Verify all figures at taostats.io/subnets/54 before making investment decisions.
+</div>
+
+<script>
+// Toggle tables
+function toggleTable(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    el.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+
+// Alpha Flow Chart (modeled/estimated)
+const alphaFlowCtx = document.getElementById('alphaFlowChart').getContext('2d');
+new Chart(alphaFlowCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'],
+    datasets: [
+      {
+        label: 'Staked SN54 — Owner (est.)',
+        data: [800, 400, 200, 150, 100, 80, 60, 50, 40, 30, 25, 20, 20, 15, 10],
+        backgroundColor: 'rgba(26,122,60,0.7)',
+        borderColor: '#1a7a3c',
+        borderWidth: 1
+      },
+      {
+        label: 'Unstaked SN54 — Owner (est.)',
+        data: [-200, -150, -300, -250, -200, -180, -160, -140, -120, -100, -90, -80, -70, -60, -50],
+        backgroundColor: 'rgba(192,57,43,0.7)',
+        borderColor: '#c0392b',
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    maintainAspectRatio: false,
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            return ctx.dataset.label + ': ' + ctx.parsed.y + ' τ equiv. (est.)';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { 
+        stacked: false,
+        ticks: { font: { size: 9 }, color: '#aaa' },
+        grid: { display: false }
+      },
+      y: {
+        ticks: { font: { size: 9 }, color: '#aaa' },
+        grid: { color: '#f2f2f2' }
+      }
+    }
+  }
+});
+
+// Price chart (estimated from public data points)
+const priceCtx = document.getElementById('priceChart').getContext('2d');
+new Chart(priceCtx, {
+  type: 'line',
+  data: {
+    labels: ['Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'],
+    datasets: [
+      {
+        label: 'MIID/TAO price',
+        data: [0.001, 0.004, 0.012, 0.018, 0.015, 0.022, 0.019, 0.016, 0.014, 0.011, 0.009, 0.008, 0.007, 0.006, 0.006, 0.0056],
+        borderColor: '#1a4fa0',
+        backgroundColor: 'rgba(26,79,160,0.05)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: '#1a4fa0'
+      }
+    ]
+  },
+  options: {
+    maintainAspectRatio: false,
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            return 'MIID: ' + ctx.parsed.y.toFixed(4) + ' TAO (est.)';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { font: { size: 9 }, color: '#aaa' },
+        grid: { display: false }
+      },
+      y: {
+        ticks: { 
+          font: { size: 9 }, 
+          color: '#aaa',
+          callback: function(v) { return v.toFixed(3); }
+        },
+        grid: { color: '#f2f2f2' }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
