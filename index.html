@@ -139,6 +139,7 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
 .tag.info   { background: #eef2fc; color: #1a4fa0; }
 .tag.warn   { background: #fdf3e3; color: #b05e00; }
 .tag.old    { background: #f2f2f2; color: #777; }
+.tag.r      { background: #fdecea; color: #c0392b; }
 
 /* FLOW */
 .flow-wrap { display: flex; align-items: flex-start; gap: 0; margin-top: 20px; flex-wrap: wrap; }
@@ -310,9 +311,9 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
 
   <div class="insight-card">
     <div class="ic-num">06</div>
-    <div class="ic-title">No Yuma/investor revenue-share hotkey — cleaner than SN44</div>
-    <div class="ic-body">SN44 (Manako) had an explicit on-chain revenue-share arrangement with Yuma/DCG — a third-party hotkey received 11.3% of all unstaked alpha. SN54 shows no equivalent third-party hotkey split in its distribution pattern. The two recipient hotkeys (5G41Md 80%, 5FsnE1 20%) appear to be internal validator hotkeys, not external investor addresses. Seed investors hold equity in Yanez Compliance, not on-chain emission streams.</div>
-    <div class="ic-stat n">No third-party investor hotkey identified</div>
+    <div class="ic-title">Recipients confirmed: one insider, one multi-subnet trader — both selling</div>
+    <div class="ic-body">Coldkey 1 (80.2% share) only stakes with Yanez MIID across SN0 and SN54 — consistent with a team/founder-controlled address. Coldkey 2 (19.8%) is a sophisticated participant with 16 positions across 11 subnets, staking with subnet owner validators on SN6, SN55, and SN54 while also buying/selling SN54 alpha on the open market. No formal third-party revenue-share hotkey (like SN44's Yuma/DCG arrangement), but both recipients are converting alpha to TAO — ~2,139 τ combined from SN54 positions.</div>
+    <div class="ic-stat r">~2,139 τ extracted by recipients from SN54</div>
   </div>
 
 </div>
@@ -417,25 +418,28 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
       <div class="lbl">transfer_stake<br>80.2% daily</div>
     </div>
     <div class="flow-node validators">
-      <div class="flow-tag">Hotkey 1 (Primary)</div>
+      <div class="flow-tag">Coldkey 1 (Primary · Insider)</div>
       <div class="flow-name">5G41Md...RzEABv</div>
-      <div class="flow-detail">~1,054 α/day<br>322,346 α lifetime<br>≈1,486 τ value</div>
+      <div class="flow-detail">~1,054 α/day<br>197,201 α sold → 1,147 τ<br>holds 216,011 α · only Yanez MIID</div>
     </div>
     <div class="flow-arrow">
       <div class="arr"></div>
       <div class="lbl">transfer_stake<br>19.8% daily</div>
     </div>
     <div class="flow-node miners">
-      <div class="flow-tag">Hotkey 2 (Secondary)</div>
+      <div class="flow-tag">Coldkey 2 (Secondary · Multi-subnet)</div>
       <div class="flow-name">5FsnE1...tCkfBt</div>
-      <div class="flow-detail">~260 α/day<br>79,582 α lifetime<br>≈367 τ value</div>
+      <div class="flow-detail">~260 α/day<br>228,837 α sold → 991 τ<br>holds 66,016 α · 11 subnets</div>
     </div>
   </div>
 
-  <div class="callout a">
-    <div class="callout-label">Open question</div>
-    <div class="callout-body">What happens to alpha after it reaches the two recipient hotkeys?</div>
-    <div class="callout-sub">To fully characterise the extraction picture, the recipient hotkeys (5G41Md...RzEABv and 5FsnE1...tCkfBt) would need to be audited separately. If they immediately convert alpha to TAO via removeStake, the effective extraction rate equals the full distribution rate. If they hold or re-stake, there is no extraction. This is the next research step for a complete SN54 owner P&amp;L.</div>
+  <div class="callout g">
+    <div class="callout-label">Confirmed — recipient audit complete</div>
+    <div class="callout-body">Both recipient coldkeys are active sellers. Combined ~2,139 τ extracted from SN54 alpha.</div>
+    <div class="callout-sub">
+      <strong>Coldkey 1</strong> (5G41MdZMCD5jSAkNRaGFBLt8L4HWNAbcveBTxiSRynRzEABv): Insider pattern — only stakes with Yanez MIID (SN0 + SN54). Has sold 197,201 α → 1,147 τ realised. Still holds 216,011 α (≈1,252 τ). Realized PnL: 282 τ. Reward earnings: 341 τ. This wallet's exclusive focus on Yanez MIID suggests it is a team/founder controlled address, not an arm's-length staker.<br><br>
+      <strong>Coldkey 2</strong> (5FsnE14afnq6uDQomdekH2nf82uveFcx2LwfiJY5JbtCkfBt): Sophisticated multi-subnet investor with 16 positions across 11 subnets. Also stakes with subnet owner validators for SN6 ("Owner6") and SN55 ("Owner55") — suggests a professional participant in early/owner validator positions across Bittensor. Has sold 228,837 α → 991 τ from SN54, while also buying SN54 alpha from the market (166,272 α purchased). Not a simple insider recipient — active participant with broader ecosystem exposure. Total TAO received across all subnets: 4,248 τ.
+    </div>
   </div>
 </div>
 
@@ -524,27 +528,29 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
       </div>
     </div>
     <div class="wallet-card">
-      <div class="wc-title">Recipient hotkey 1 (primary)</div>
-      <div class="wc-key">5G41Md...RzEABv</div>
+      <div class="wc-title">Recipient coldkey 1 (primary · CONFIRMED)</div>
+      <div class="wc-key">5G41MdZMCD5jSAkNRaGFBLt8L4HWNAbcveBTxiSRynRzEABv</div>
       <div class="wc-meta">
         <span class="tag info">~80.2%</span>
-        ~1,054 α/day · ~322,346 α lifetime · identity unconfirmed
+        <span class="tag r">SELLING</span>
+        ~1,054 α/day · 197,201 α sold → 1,147 τ extracted · holds 216,011 α (≈1,252 τ) · ONLY stakes with Yanez MIID — insider pattern
       </div>
     </div>
     <div class="wallet-card">
-      <div class="wc-title">Recipient hotkey 2 (secondary)</div>
-      <div class="wc-key">5FsnE1...tCkfBt</div>
+      <div class="wc-title">Recipient coldkey 2 (secondary · CONFIRMED)</div>
+      <div class="wc-key">5FsnE14afnq6uDQomdekH2nf82uveFcx2LwfiJY5JbtCkfBt</div>
       <div class="wc-meta">
         <span class="tag warn">~19.8%</span>
-        ~260 α/day · ~79,582 α lifetime · identity unconfirmed
+        <span class="tag r">SELLING</span>
+        ~260 α/day · 228,837 α sold → 991 τ from SN54 · holds 66,016 α · active in 11 subnets (SN6, SN23, SN42, SN54, SN55, SN59, SN60+) · also buys SN54 alpha from market
       </div>
     </div>
   </div>
 
-  <div class="callout g">
-    <div class="callout-label">TAO Institute assessment</div>
-    <div class="callout-body">SN54 is the cleanest owner on-chain record of any subnet audited to date</div>
-    <div class="callout-sub">Zero removeStake from owner coldkey. Systematic daily distributions. Seed capital in hand. Three named enterprise clients. Professional coldkey swap. The primary watchpoint is the recipient hotkeys — if 5G41Md or 5FsnE1 are liquidating their alpha to TAO, the effective extraction rate could be high. But that's a recipient audit question, not an indictment of the owner's on-chain behavior. Compared to SN44 (Manako, 10,597 τ extracted) and SN68, SN54 is significantly lower risk on the owner extraction dimension.</div>
+  <div class="callout a">
+    <div class="callout-label">TAO Institute assessment — updated with recipient audit</div>
+    <div class="callout-body">Owner coldkey: 0 τ extracted. Recipients: ~2,139 τ extracted from SN54 alpha combined.</div>
+    <div class="callout-sub">The owner's zero-AMM-extraction record remains intact — all outflows from the owner coldkey are <code>transfer_stake</code> dividends, not direct liquidations. However, both recipient coldkeys are confirmed active sellers. Coldkey 1 (insider pattern: only stakes with Yanez MIID) has sold 197K α → 1,147 τ. Coldkey 2 (diversified multi-subnet trader) has sold 229K α → 991 τ from SN54 positions. Combined, the recipients have extracted ~2,139 τ in realised TAO from SN54 alpha. The owner's on-chain behaviour is clean; the effective network extraction runs through the recipient layer. Compared to SN44 (Manako: 10,597 τ direct AMM extraction), SN54's distributed structure provides the owner with plausible separation. Still a materially different risk profile than a pure hold-to-build operator.</div>
   </div>
 </div>
 
@@ -556,7 +562,7 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
   <div class="section-q">What data sources were used, and what is confirmed vs. inferred?</div>
 
   <div class="section-a g">
-    <strong>Data quality:</strong> All key figures are confirmed via live browser access to taostats.io (extrinsics, transaction log, account balance) and tao.app portfolio allocation API. Only the monthly distribution breakdown is inferred from the confirmed daily rate (1,314 α/day × days in month). Hotkey full addresses are partially truncated in the taostats display.
+    <strong>Data quality:</strong> All key figures are confirmed via live browser access to taostats.io (extrinsics, transaction log, account balance) and tao.app portfolio allocation API (authenticated browser fetch). Full addresses of both recipient coldkeys confirmed May 22 2026. Recipient sell behavior confirmed via tao.app allocation API for both coldkeys. Only the monthly distribution breakdown is inferred from the confirmed daily rate (1,314 α/day × days in month).
   </div>
 
   <button class="toggle-btn" onclick="toggleTable('sources-table')">
@@ -585,12 +591,14 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
         <tr><td>Total TAO received: 1,853.33 τ</td><td>tao.app /api/beta/portfolio/allocation (browser fetch)</td><td><span class="badge in">Confirmed</span></td><td>total_tao_received field · lifetime aggregate</td></tr>
         <tr><td>Currently staked: 867.88 α = 4.84 τ</td><td>tao.app allocation API</td><td><span class="badge in">Confirmed</span></td><td>Current staked position</td></tr>
         <tr><td>Owner balance: 7.54 τ</td><td>taostats.io account page</td><td><span class="badge in">Confirmed</span></td><td>5.58 τ delegated + 1.96 τ free</td></tr>
-        <tr><td>Hotkey 1: 5G41Md...RzEABv</td><td>taostats.io Transactions tab</td><td><span class="badge rem">Partial</span></td><td>Truncated — full address not captured</td></tr>
-        <tr><td>Hotkey 2: 5FsnE1...tCkfBt</td><td>taostats.io Transactions tab</td><td><span class="badge rem">Partial</span></td><td>Truncated — full address not captured</td></tr>
+        <tr><td>Coldkey 1 full address: 5G41MdZMCD5jSAkNRaGFBLt8L4HWNAbcveBTxiSRynRzEABv</td><td>tao.app portfolio page (owner coldkey page)</td><td><span class="badge in">Confirmed</span></td><td>Full address found in href link on tao.app/portfolio/5FUfru...Defk page</td></tr>
+        <tr><td>Coldkey 2 full address: 5FsnE14afnq6uDQomdekH2nf82uveFcx2LwfiJY5JbtCkfBt</td><td>tao.app portfolio page (owner coldkey page)</td><td><span class="badge in">Confirmed</span></td><td>Full address found in href link on tao.app/portfolio/5FUfru...Defk page</td></tr>
         <tr><td>Zero removeStake extrinsics</td><td>taostats.io Extrinsics tab (both coldkeys)</td><td><span class="badge in">Confirmed</span></td><td>Old coldkey: 22 setup extrinsics, 0 removeStake. New coldkey: 0 extrinsics.</td></tr>
         <tr><td>Monthly distribution breakdown</td><td>Computed from confirmed daily rate</td><td><span class="badge add">Inferred</span></td><td>1,314 α/day × days per month from Jul 20 2025. Totals to ~402K α vs confirmed 401,928 α.</td></tr>
-        <tr><td>Hotkey identity (internal vs. external)</td><td>Not confirmed</td><td><span class="badge out">Unknown</span></td><td>Full addresses needed to cross-reference on taostats</td></tr>
-        <tr><td>Recipient hotkey removeStake behavior</td><td>Not audited</td><td><span class="badge out">Unknown</span></td><td>Whether 5G41Md/5FsnE1 subsequently sell alpha is the open research question</td></tr>
+        <tr><td>Coldkey 1 identity: insider (only stakes with Yanez MIID)</td><td>tao.app /api/beta/portfolio/allocation</td><td><span class="badge in">Confirmed</span></td><td>Only two positions: SN0 (root) and SN54, both with Yanez MIID validator exclusively</td></tr>
+        <tr><td>Coldkey 1 sell behavior: 197,201 α sold → 1,147 τ</td><td>tao.app /api/beta/portfolio/allocation (browser fetch)</td><td><span class="badge in">Confirmed</span></td><td>total_alpha_sold + total_tao_received from SN54 position. Realized PnL: 282 τ. Still holds 216,011 α.</td></tr>
+        <tr><td>Coldkey 2 identity: multi-subnet active trader (11 subnets)</td><td>tao.app /api/beta/portfolio/allocation</td><td><span class="badge in">Confirmed</span></td><td>16 positions across SN0, SN6, SN23, SN42, SN54, SN55, SN59, SN60, SN61, SN72. Stakes with Owner6/Owner55/Yanez MIID/Yuma.</td></tr>
+        <tr><td>Coldkey 2 sell behavior: 228,837 α sold → 991 τ from SN54</td><td>tao.app /api/beta/portfolio/allocation (browser fetch)</td><td><span class="badge in">Confirmed</span></td><td>Also bought 166,272 α from market. Total sold across all subnets: 4,248 τ received.</td></tr>
         <tr><td>Subnet name: Yanez MIID</td><td>taostats.io, tao.app</td><td><span class="badge in">Confirmed</span></td><td>Multiple sources</td></tr>
         <tr><td>Owner: Jose Caldera</td><td>TAO Daily, Yanez website, macrocosmosai.substack.com</td><td><span class="badge in">Confirmed</span></td><td>Multiple public primary sources</td></tr>
         <tr><td>Seed Part A: $900K oversubscribed</td><td>yanezcompliance.com press release</td><td><span class="badge in">Confirmed</span></td><td>Official announcement Jul 22 2025</td></tr>
@@ -632,7 +640,7 @@ tbody td { padding: 6px 10px; color: #333; font-size: 11px; white-space: nowrap;
 <div class="footer">
   <strong>SN54 · Yanez MIID · On-Chain Analysis</strong> · Produced by TAO Institute / Pylon Partners · May 22, 2026<br>
   Data sources: taostats.io (live browser session · extrinsics, transactions, account balance), tao.app portfolio allocation API (browser fetch · authenticated session), yanezcompliance.com (press releases), castellum.ai, prnewswire.com (Sigma360), cision.com (Atoma/Safello), CryptoRank.io, GeckoTerminal SN54/TAO pool.<br>
-  All key figures confirmed on-chain. Monthly distribution chart is inferred from confirmed daily rate (1,314 α/day). Hotkey identities partially truncated. Recipient hotkey on-chain behavior not audited.
+  All key figures confirmed on-chain. Monthly distribution chart is inferred from confirmed daily rate (1,314 α/day). Full recipient coldkey addresses confirmed May 22 2026 via tao.app. Recipient sell behavior fully audited: coldkey 1 sold 197,201 α → 1,147 τ; coldkey 2 sold 228,837 α → 991 τ from SN54 positions.
 </div>
 
 <script>
